@@ -49,7 +49,13 @@ class AssetMapHelpers {
           if (entry[fieldname] && entry[fieldname].path) {
             let path = entry[fieldname].path;
             if (!validUrl.isUri(path)) {
-              path = this.config.host + '/' + path;
+              // This creates an incorrect URL since
+              // cockpit seems to return a path including
+              // the folder and a leadig slash
+              // e.g. /cockpit/uploads/storage/...
+              //
+              // path = this.config.host + '/' + path;
+              path = this.config.baseURL + path
             }
             if (validUrl.isUri(path)) {
               this.assets.push({
