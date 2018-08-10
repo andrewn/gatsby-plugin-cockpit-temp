@@ -81,7 +81,10 @@ module.exports = class CreateNodesHelpers {
   // the important part is the `___NODE`.
   composeEntryAssetFields(assetFields, entry) {
     return assetFields.reduce((acc, fieldname) => {
-      if (entry[fieldname].path == null) {
+      if (
+        entry[fieldname] == null ||
+        (entry[fieldname] != null && entry[fieldname].path == null)
+      ) {
         return acc;
       }
 
@@ -314,7 +317,7 @@ module.exports = class CreateNodesHelpers {
   }
 
   createCollectionItemNode({ entry, fields, name }) {
-
+    
     //1
     const imageFields = this.getImageFields(fields);
     const assetFields = this.getAssetFields(fields);

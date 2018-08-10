@@ -46,7 +46,7 @@ class AssetMapHelpers {
       );
       imageFields.forEach(fieldname => {
         entries.forEach(entry => {
-          if (entry[fieldname].path) {
+          if (entry[fieldname] && entry[fieldname].path) {
             let path = entry[fieldname].path;
             if (!validUrl.isUri(path)) {
               path = this.config.host + '/' + path;
