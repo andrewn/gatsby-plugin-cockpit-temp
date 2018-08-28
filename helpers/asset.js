@@ -2,12 +2,17 @@ const { createRemoteFileNode } = require(`gatsby-source-filesystem`);
 const validUrl = require('valid-url');
 
 async function createRemoteAssetByPath(url, store, cache, createNode) {
-  const { id, internal, ext, name } = await createRemoteFileNode({
+  const remoteFileNode = await createRemoteFileNode({
     url,
     store,
     cache,
     createNode,
-  });
+  })
+
+  if (remoteFileNode == null) {
+    console.warn(`Can't create remoteFileNode: ${url}`)
+  }
+
   return {
     url,
     id,
