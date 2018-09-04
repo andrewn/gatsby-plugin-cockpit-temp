@@ -15,11 +15,11 @@ async function createRemoteAssetByPath(url, store, cache, createNode) {
 
   return {
     url,
-    id,
-    ext,
-    name,
-    contentDigest: internal.contentDigest,
-  };
+    id: remoteFileNode.id,
+    ext: remoteFileNode.ext,
+    name: remoteFileNode.name,
+    contentDigest: remoteFileNode.internal.contentDigest,
+  }
 }
 
 async function createAssetsMap(assetPromises) {
