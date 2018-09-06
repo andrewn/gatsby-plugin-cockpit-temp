@@ -53,6 +53,12 @@ module.exports = class CreateNodesHelpers {
     );
   }
 
+  getGalleryFields(fields) {
+    return Object.keys(fields).filter(
+      fieldname => fields[fieldname].type === 'gallery'
+    );
+  }
+
   getAssetFields(fields) {
     return Object.keys(fields).filter(
       fieldname => fields[fieldname].type === 'asset'
@@ -73,7 +79,7 @@ module.exports = class CreateNodesHelpers {
 
   getOtherFields(fields) {
     return Object.keys(fields).filter(
-      fieldname => !['image', 'asset', 'collectionlink'].includes(fields[fieldname].type)
+      fieldname => !['image', 'gallery', 'asset', 'collectionlink'].includes(fields[fieldname].type)
     );
   }
 
@@ -91,6 +97,35 @@ module.exports = class CreateNodesHelpers {
       let fileLocation = this.getFileAsset(entry[fieldname].path);
       
       entry[fieldname].localFile___NODE = fileLocation;
+      const newAcc = {
+        ...acc,
+        [fieldname]: entry[fieldname],
+      };
+      return newAcc;
+    }, {});
+  }
+
+  // map the entry gallery image fields to link to the asset node
+  // the important part is the `___NODE`.
+  composeEntryGalleryAssetFields(assetFields, entry) {
+    return assetFields.reduce((acc, fieldname) => {
+      if (!Array.isArray(entry[fieldname])) {
+        return acc;
+      }
+
+      debugger
+
+      entry[fieldname].forEach(
+        field => {
+          if (field.path) {
+            let fileLocation = this.getFileAsset(field.path);
+            field.localFile___NODE = fileLocation;
+          }
+        }
+      )
+
+      // We probably don't need to create a newAcc
+      // as we've already mutated entry[fieldname]
       const newAcc = {
         ...acc,
         [fieldname]: entry[fieldname],
@@ -320,12 +355,14 @@ module.exports = class CreateNodesHelpers {
     
     //1
     const imageFields = this.getImageFields(fields);
+    const galleryFields = this.getGalleryFields(fields);
     const assetFields = this.getAssetFields(fields);
     const layoutFields = this.getLayoutFields(fields);
     const collectionLinkFields = this.getCollectionLinkFields(fields);
     const otherFields = this.getOtherFields(fields);
     //2
     const entryImageFields = this.composeEntryAssetFields(imageFields, entry);
+    const entryGalleryFields = this.composeEntryGalleryAssetFields(galleryFields, entry);
     const entryAssetFields = this.composeEntryAssetFields(assetFields, entry);
     const entryCollectionLinkFields = this.composeEntryCollectionLinkFields(collectionLinkFields, entry);
     const entryLayoutFields = this.composeEntryLayoutFields(
@@ -341,6 +378,7 @@ module.exports = class CreateNodesHelpers {
     const node = {
       ...entryWithOtherFields,
       ...entryImageFields,
+      ...entryGalleryFields,
       ...entryAssetFields,
       ...entryCollectionLinkFields,
       ...entryLayoutFields,

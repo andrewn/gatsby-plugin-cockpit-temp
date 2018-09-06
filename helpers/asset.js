@@ -44,6 +44,31 @@ class AssetMapHelpers {
     this.config.host = config.baseURL + config.folder;
   }
 
+  addImagePathToAssetsArray(field) {
+    if (field && field.path) {
+      let path = field.path;
+      if (!validUrl.isUri(path)) {
+        // This creates an incorrect URL since
+        // cockpit seems to return a path including
+        // the folder and a leadig slash
+        // e.g. /cockpit/uploads/storage/...
+        //
+        // path = this.config.host + '/' + path;
+        path = this.config.baseURL + path;
+      }
+      if (validUrl.isUri(path)) {
+        this.assets.push({
+          path,
+        });
+      } else {
+        throw new Error(
+          'The path of an image seems to be malformed -> ',
+          path
+        );
+      }
+    }
+  }
+
   addAllOtherImagesPathsToAssetsArray() {
     this.collectionsItems.map(({ entries, fields }) => {
       const imageFields = Object.keys(fields).filter(
@@ -51,30 +76,23 @@ class AssetMapHelpers {
       );
       imageFields.forEach(fieldname => {
         entries.forEach(entry => {
-          if (entry[fieldname] && entry[fieldname].path) {
-            let path = entry[fieldname].path;
-            if (!validUrl.isUri(path)) {
-              // This creates an incorrect URL since
-              // cockpit seems to return a path including
-              // the folder and a leadig slash
-              // e.g. /cockpit/uploads/storage/...
-              //
-              // path = this.config.host + '/' + path;
-              path = this.config.baseURL + path
-            }
-            if (validUrl.isUri(path)) {
-              this.assets.push({
-                path,
-              });
-            } else {
-              throw new Error(
-                'The path of an image seems to be malformed -> ',
-                path
-              );
-            }
-          }
+          this.addImagePathToAssetsArray(entry[fieldname]);
         });
       });
+
+      // Galleries are composed of images
+      const galleryFields = Object.keys(fields).filter(
+        fieldname => fields[fieldname].type === 'gallery'
+      );
+      galleryFields.forEach(fieldname => {
+        entries.forEach(entry => {
+          if (entry[fieldname] && Array.isArray(entry[fieldname])) {
+            entry[fieldname].forEach(
+              field => this.addImagePathToAssetsArray(field)
+            )
+          }
+        })
+      })
     });
   }
 
