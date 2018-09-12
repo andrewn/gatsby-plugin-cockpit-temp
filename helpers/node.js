@@ -5,6 +5,7 @@ const validUrl = require('valid-url');
 module.exports = class CreateNodesHelpers {
   constructor({
     collectionsItems,
+    singletonsItems,
     regionsItems,
     store,
     cache,
@@ -13,6 +14,7 @@ module.exports = class CreateNodesHelpers {
     config,
   }) {
     this.collectionsItems = collectionsItems;
+    this.singletonsItems = singletonsItems;
     this.regionsItems = regionsItems;
     this.store = store;
     this.cache = cache;
@@ -32,6 +34,15 @@ module.exports = class CreateNodesHelpers {
             fields,
           })
         );
+
+        return { name, nodes, fields };
+      }),
+      this.singletonsItems.map(({ fields, entry, name }) => {
+        const nodes = this.createSingletonItemNode({
+          entry,
+          name,
+          fields,
+        })
 
         return { name, nodes, fields };
       }),
@@ -112,8 +123,6 @@ module.exports = class CreateNodesHelpers {
       if (!Array.isArray(entry[fieldname])) {
         return acc;
       }
-
-      debugger
 
       entry[fieldname].forEach(
         field => {
@@ -383,6 +392,51 @@ module.exports = class CreateNodesHelpers {
       ...entryCollectionLinkFields,
       ...entryLayoutFields,
       id: entry._id,
+      children: [],
+      parent: null,
+      internal: {
+        type: singular(name),
+        contentDigest: crypto
+          .createHash(`md5`)
+          .update(JSON.stringify(entry))
+          .digest(`hex`),
+      },
+    };
+    this.createNode(node);
+    return node;
+  }
+
+  createSingletonItemNode({ entry, fields, name }) {
+    //1
+    const imageFields = this.getImageFields(fields);
+    const galleryFields = this.getGalleryFields(fields);
+    const assetFields = this.getAssetFields(fields);
+    const layoutFields = this.getLayoutFields(fields);
+    const collectionLinkFields = this.getCollectionLinkFields(fields);
+    const otherFields = this.getOtherFields(fields);
+    //2
+    const entryImageFields = this.composeEntryAssetFields(imageFields, entry);
+    const entryGalleryFields = this.composeEntryGalleryAssetFields(galleryFields, entry);
+    const entryAssetFields = this.composeEntryAssetFields(assetFields, entry);
+    const entryCollectionLinkFields = this.composeEntryCollectionLinkFields(collectionLinkFields, entry);
+    const entryLayoutFields = this.composeEntryLayoutFields(
+      layoutFields,
+      entry
+    );
+    const entryWithOtherFields = this.composeEntryWithOtherFields(
+      otherFields,
+      entry
+    );
+
+    //3
+    const node = {
+      ...entryWithOtherFields,
+      ...entryImageFields,
+      ...entryGalleryFields,
+      ...entryAssetFields,
+      ...entryCollectionLinkFields,
+      ...entryLayoutFields,
+      id: entry._by,
       children: [],
       parent: null,
       internal: {

@@ -34,12 +34,13 @@ async function createAssetsMap(assetPromises) {
 }
 
 class AssetMapHelpers {
-  constructor({ assets, store, cache, createNode, collectionsItems, config }) {
+  constructor({ assets, store, cache, createNode, collectionsItems, singletonsItems, config }) {
     this.assets = assets;
     this.store = store;
     this.cache = cache;
     this.createNode = createNode;
     this.collectionsItems = collectionsItems;
+    this.singletonsItems = singletonsItems;
     this.config = config;
     this.config.host = config.baseURL + config.folder;
   }
@@ -93,6 +94,36 @@ class AssetMapHelpers {
           }
         })
       })
+    });
+
+    
+    this.singletonsItems.map(({ entry, fields }) => {
+      // Find fields that are of type image and fetch from singleton
+      Object.values(fields).filter(
+        field => field.type === 'image'
+      ).forEach(
+        (field) => {
+          const value = entry[field.name];
+          if (value != null) {
+            this.addImagePathToAssetsArray(value)
+          }
+        }
+      );
+
+      // Galleries are composed of images
+      Object.values(fields).filter(
+        field => field.type === 'gallery'
+      ).forEach(
+        field => {
+          const value = entry[field.name];
+          if (value && Array.isArray(value)) {
+              value.forEach(
+                item => this.addImagePathToAssetsArray(item)
+              )
+          }
+        }
+      );
+  
     });
   }
 

@@ -27,9 +27,10 @@ exports.sourceNodes = async ({
   const cockpitHelpers = new CockpitHelpers(cockpit, config);
   const collectionsNames = await cockpitHelpers.getCollectionNames();
 
-  const [{ assets }, collectionsItems, regionsItems] = await Promise.all([
+  const [{ assets }, collectionsItems, singletonsItems, regionsItems] = await Promise.all([
     cockpit.assets(), 
     cockpitHelpers.getCockpitCollections(),
+    cockpitHelpers.getCockpitSingletons(),
     cockpitHelpers.getCockpitRegions(),
   ]);
 
@@ -38,6 +39,7 @@ exports.sourceNodes = async ({
   itemsStore.set('collectionsItems', collectionsItems);
   itemsStore.set('regionsItems', regionsItems);
   itemsStore.set('collectionsNames', collectionsNames);
+  itemsStore.set('singletonsItems', singletonsItems);
 
   const assetMapHelpers = new AssetMapHelpers({
     assets,
@@ -45,6 +47,7 @@ exports.sourceNodes = async ({
     cache,
     createNode,
     collectionsItems,
+    singletonsItems,
     config,
   });
 
@@ -52,6 +55,7 @@ exports.sourceNodes = async ({
 
   const createNodesHelpers = new CreateNodesHelpers({
     collectionsItems,
+    singletonsItems,
     regionsItems,
     store,
     cache,
