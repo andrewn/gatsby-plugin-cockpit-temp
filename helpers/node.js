@@ -38,11 +38,11 @@ module.exports = class CreateNodesHelpers {
         return { name, nodes, fields };
       }),
       this.singletonsItems.map(({ fields, entry, name }) => {
-        const nodes = this.createSingletonItemNode({
+        const nodes = [this.createSingletonItemNode({
           entry,
           name,
           fields,
-        })
+        })]
 
         return { name, nodes, fields };
       }),
@@ -149,9 +149,18 @@ module.exports = class CreateNodesHelpers {
     return collectionLinkFields.reduce((acc, fieldname) => {
 
       const key = fieldname + '___NODE';
+
+      let links;
+
+      if (Array.isArray(entry[fieldname])) {
+        links = entry[fieldname].map(field => field._id)
+      } else {
+        links = entry[fieldname]._id
+      }
+
       const newAcc = {
         ...acc,
-        [key]: entry[fieldname]._id,
+        [key]: links,
       };
       return newAcc;
     }, {});
@@ -436,7 +445,7 @@ module.exports = class CreateNodesHelpers {
       ...entryAssetFields,
       ...entryCollectionLinkFields,
       ...entryLayoutFields,
-      id: entry._by,
+      id: name,
       children: [],
       parent: null,
       internal: {
