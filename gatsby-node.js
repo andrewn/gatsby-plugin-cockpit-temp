@@ -5,6 +5,7 @@ const itemsStore = require('./items-store');
 
 exports.sourceNodes = async ({
   actions: { createNode },
+  createNodeId,
   store,
   cache,
 }, pluginOptions) => {
@@ -46,6 +47,7 @@ exports.sourceNodes = async ({
     store,
     cache,
     createNode,
+    createNodeId,
     collectionsItems,
     singletonsItems,
     config,

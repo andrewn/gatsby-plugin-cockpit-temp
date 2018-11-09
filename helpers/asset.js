@@ -1,12 +1,13 @@
 const { createRemoteFileNode } = require(`gatsby-source-filesystem`);
 const validUrl = require('valid-url');
 
-async function createRemoteAssetByPath(url, store, cache, createNode) {
+async function createRemoteAssetByPath(url, store, cache, createNode, createNodeId) {
   const remoteFileNode = await createRemoteFileNode({
     url,
     store,
     cache,
     createNode,
+    createNodeId
   })
 
   if (remoteFileNode == null) {
@@ -34,11 +35,12 @@ async function createAssetsMap(assetPromises) {
 }
 
 class AssetMapHelpers {
-  constructor({ assets, store, cache, createNode, collectionsItems, singletonsItems, config }) {
+  constructor({ assets, store, cache, createNode, createNodeId, collectionsItems, singletonsItems, config }) {
     this.assets = assets;
     this.store = store;
     this.cache = cache;
     this.createNode = createNode;
+    this.createNodeId = createNodeId;
     this.collectionsItems = collectionsItems;
     this.singletonsItems = singletonsItems;
     this.config = config;
@@ -137,7 +139,8 @@ class AssetMapHelpers {
         asset.path,
         this.store,
         this.cache,
-        this.createNode
+        this.createNode,
+        this.createNodeId
       )
     );
 
