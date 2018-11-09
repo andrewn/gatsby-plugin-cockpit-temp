@@ -11,7 +11,7 @@ async function createRemoteAssetByPath(url, store, cache, createNode, createNode
   })
 
   if (remoteFileNode == null) {
-    console.warn(`Can't create remoteFileNode: ${url}`)
+    throw new Error(`Can't create remoteFileNode: ${url}`)
   }
 
   return {
